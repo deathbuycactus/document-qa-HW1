@@ -1,8 +1,6 @@
 import streamlit as st
 from openai import OpenAI
-import PyPDF2
-import tabula
-
+import fitz
 # Show title and description.
 st.title("MY Document question answering")
 st.write(
@@ -14,6 +12,15 @@ st.write(
 # Alternatively, you can store the API key in `./.streamlit/secrets.toml` and access it
 # via `st.secrets`, see https://docs.streamlit.io/develop/concepts/connections/secrets-management
 openai_api_key = st.text_input("OpenAI API Key", type="password")
+
+def extract_text_from_pdf(pdf_path):
+    document = fitz.open(pdf_path)
+    text = ''
+    for page_num in range(len(document)):
+        page = document.load_page(page_num)
+        text += page.get_text()
+    return text
+
 if not openai_api_key:
     st.info("Please add your OpenAI API key to continue.", icon="🗝️")
 else:
@@ -26,40 +33,26 @@ else:
         "Upload a document (.txt or .pdf)", type=("txt", "pdf")
     )
 
-    # Extract contents of PDF
-    def extract_text_from_pdf(pdf_path):
-        with open(pdf_path, 'rb') as file:
-            reader = PyPDF2.PdfFileReader(file)
-            text = ''
-            for page_num in range(reader.numPages):
-                page = reader.getPage(page_num)
-                text += page.extract_text()
-            return text
-
-    #pdf_path = 'path/to/your/pdf/document.pdf'
-    #pdf_text = extract_text_from_pdf(pdf_path)
-    #print(pdf_text)
-
-    # File type check
-    file_extension = uploaded_file.name.split('.')[-1]
-    if file_extension == 'txt':
-        document = uploaded_file.read().decode()
-    elif file_extension == 'pdf':
-        document = extract_text_from_pdf(uploaded_file)
-    else:
-        st.error("Unsupported file type.")
-
     # Ask the user for a question via `st.text_area`.
     question = st.text_area(
         "Now ask a question about the document!",
         placeholder="Can you give me a short summary?",
         disabled=not uploaded_file,
     )
-
+    
+    # File type check
+    file_extension = uploaded_file.name.split('.')[-1]
+    if file_extension == 'txt':
+        document = uploaded_file.read().decode()
+    elif file_extension == 'pdf':
+        document = read_pdf(uploaded_file)
+    else:
+        st.error("Unsupported file type.")
+                 
     if uploaded_file and question:
 
         # Process the uploaded file and question.
-        document = uploaded_file.read().decode()
+        #document = uploaded_file.read().decode()
         messages = [
             {
                 "role": "user",
