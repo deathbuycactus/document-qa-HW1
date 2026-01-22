@@ -8,6 +8,7 @@ def read_pdf(file):
     for page in reader.pages:
         text += page.extract_text()
     return text
+
 # Show title and description.
 st.title("MY Document question answering")
 st.write(
@@ -22,8 +23,8 @@ openai_api_key = st.text_input("OpenAI API Key", type="password")
 
 if not openai_api_key:
     st.info("Please add your OpenAI API key to continue.", icon="🗝️")
+    
 else:
-
     # Create an OpenAI client.
     client = OpenAI(api_key=openai_api_key)
 
@@ -38,22 +39,19 @@ else:
         placeholder="Can you give me a short summary?",
         disabled=not uploaded_file,
     )
-    document = None
 
-if uploaded_file:
-    file_extension = uploaded_file.name.split('.')[-1]
-
-    if file_extension == 'txt':
-        document = uploaded_file.read().decode()
-
-    elif file_extension == 'pdf':
-        document = read_pdf(uploaded_file)
-
-    else:
-        st.error("Unsupported file type.")
-
-                 
     if uploaded_file and question:
+    
+        file_extension = uploaded_file.name.split('.')[-1]
+
+        if file_extension == 'txt':
+            document = uploaded_file.read().decode()
+
+        elif file_extension == 'pdf':
+            document = read_pdf(uploaded_file)
+
+        else:
+            st.error("Unsupported file type.")
 
         # Process the uploaded file and question.
         #document = uploaded_file.read().decode()
@@ -71,5 +69,5 @@ if uploaded_file:
             stream=True,
         )
 
-        # Stream the response to the app using `st.write_stream`.
+            # Stream the response to the app using `st.write_stream`.
         st.write_stream(stream)
