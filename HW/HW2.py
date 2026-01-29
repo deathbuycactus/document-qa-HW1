@@ -2,6 +2,8 @@ import streamlit as st
 from openai import OpenAI
 import requests
 from bs4 import BeautifulSoup
+import google.generativeai as genai
+
 
 # Show title and description.
 st.title("MY Document question answering")
@@ -49,6 +51,10 @@ output_lang = st.selectbox(
     "What language would you like the response to be in?",
     ("English", "French", "Spanish")
 )
+# Api keys
+st.write("Secrets keys:", list(st.secrets.keys()))
+HW_key = st.secrets["IST488"] # OpenAI Key
+Gemini_Key = st.secrets['IST488_G'] # Gemini Key
 
 if URL and summary:
 
@@ -62,11 +68,9 @@ if URL and summary:
     ]
     if checkbox == True:
         if LLM == "Gemini":
+            client = genai.Client(api_key=Gemini_Key)
             model = "gemini-3-flash-preview"
         else:
-            # st.write("Secrets keys:", list(st.secrets.keys()))
-            HW_key = st.secrets["IST488"]
-
             # Create an OpenAI client.
             client = OpenAI(api_key=HW_key)
             model = "gpt-5-nano"
@@ -78,11 +82,9 @@ if URL and summary:
         )
     else:
         if LLM == "Gemini":
+            client = genai.Client(api_key=Gemini_Key)
             model = "gemini-2.5-pro"
         else:
-            # st.write("Secrets keys:", list(st.secrets.keys()))
-            HW_key = st.secrets["IST488"]
-
             # Create an OpenAI client.
             client = OpenAI(api_key=HW_key)
             model = "gpt-5-mini"
