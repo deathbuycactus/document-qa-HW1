@@ -2,7 +2,7 @@ import streamlit as st
 from openai import OpenAI
 import requests
 from bs4 import BeautifulSoup
-import google.genai as genai
+import google.generativeai as genai
 
 
 # Show title and description.
