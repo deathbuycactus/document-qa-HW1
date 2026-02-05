@@ -34,7 +34,7 @@ URL2 = URL2 = st.text_input(
 if LLM == "ChatGPT":
     model_choice = "gpt-4o-mini"
 else:
-    model_choice = "gemini-3-flash-preview"
+    model_choice = "gemini-2.5-pro"
 
 # Create GPT Client
 if LLM == "ChatGPT" and 'client' not in st.session_state:
