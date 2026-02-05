@@ -34,7 +34,7 @@ URL2 = URL2 = st.text_input(
 if LLM == "ChatGPT":
     model_choice = "gpt-4o-mini"
 else:
-    model_choice = "gemini-2.5-pro"
+    model_choice = "gemini-1.5-pro"
 
 # Create GPT Client
 if LLM == "ChatGPT" and 'client' not in st.session_state:
@@ -85,13 +85,20 @@ if prompt := st.chat_input("What is up?"):
             model = model_choice,
             messages = st.session_state.messages, 
             stream = True)
-    elif LLM == "Gemini":
-        client = st.session_state.client
-        stream = client.chat.completions.create(
-            model = model_choice,
-            messages = st.session_state.messages, 
-            stream = True)
-    with st.chat_message("assistant"):
+        with st.chat_message("assistant"):
             response = st.write_stream(stream)
-    st.session_state.messages.append({"role": "assistant", "content": response})
+        st.session_state.messages.append({"role": "assistant", "content": response})
+    elif LLM == "Gemini":
+        model = genai.GenerativeModel(model_choice)
+        response = model.generate_content(prompt)
+        assistant_text = response.text
+        with st.chat_message("assistant"):
+            st.write(assistant_text)
+
+        st.session_state.messages.append({
+            "role": "assistant",
+            "content": assistant_text
+        })
+
+
 
