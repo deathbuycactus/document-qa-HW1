@@ -94,10 +94,19 @@ if prompt := st.chat_input("What is up?"):
         st.session_state.messages.append({"role": "assistant", "content": response})
     elif LLM == "Gemini":
         model = genai.GenerativeModel(model_choice)
+        history = "\n".join(
+            f"{m['role'].upper()}: {m['content']}"
+            for m in st.session_state.messages
+            if m["role"] != "system"
+        )
+        
         gemini_prompt = f"""
             You are a question-answering assistant.
 
             You will answer questions that pertain to {URL1_content} and/or {URL2_content}. Do not forget the contents of these websites.
+            
+            Conversation so far:
+            {history}
 
             Rules:
             End first response: 'Do you want more information?' 
