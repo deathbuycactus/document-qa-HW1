@@ -25,10 +25,10 @@ chroma_client = chromadb.PersistentClient(path='./ChromaDB_for_Lab')
 collection = chroma_client.get_or_create_collection('Lab4Collection')
 
 # ==============================
-# PDF Embedding Functions
+# HTML Embedding Functions
 # ==============================
 def add_to_collection(collection, text, file_name):
-    """Embed a PDF document and store in ChromaDB."""
+    """Embed a html document and store in ChromaDB."""
     client = st.session_state.openai_client
     query_embed = client.embeddings.create(
         input=text,
@@ -51,19 +51,25 @@ def extract_text_from_pdf(pdf_path):
             text += page_text
     return text
 
-def load_pdfs_to_collection(folder_path, collection):
+def load_htmls_to_collection(folder_path, collection):
     folder = Path(folder_path)
     for html_path in folder.glob("*.html"):
         try:
-            text = extract_text_from_pdf(html_path)
-            file_name = html_path.name
-            add_to_collection(collection, text, file_name)
+            text = html_path.read_text(encoding="utf-8", errors="ignore")
+            midpoint = len(text) // 2
+            chunks = [text[:midpoint], text[midpoint:]]
+
+            # Store each chunk separately
+            for i, chunk in enumerate(chunks):
+                file_id = f"{html_path.stem}_part{i+1}"
+                add_to_collection(collection, chunk, file_id)
         except Exception as e:
             print(f"Error processing {html_path.name}: {e}")
+# I'm using semantic chunking here since the html documents have a consistent structure, it's not necessary to use any more complex chunking method
 
 # Load PDFs if collection is empty
 if collection.count() == 0:
-    load_pdfs_to_collection('./SYLLABI/', collection)
+    load_htmls_to_collection('./su-orgs/', collection)
 
 # ==============================
 # Streamlit UI
@@ -86,7 +92,7 @@ if "messages" not in st.session_state:
             "role": "system",
             "content": (
                 "You are a question-answering assistant. "
-                "If the question cannot be answered using the PDF texts given, "
+                "If the question cannot be answered using the HTML texts given, "
                 "you may use external sources. "
                 "Cite sources if used."
             )
@@ -148,3 +154,11 @@ if prompt := st.chat_input("Ask a question:"):
     with st.chat_message("assistant"):
         response = st.write_stream(stream)
     st.session_state.messages.append({"role": "assistant", "content": response})
+    MAX_INTERACTIONS = 5
+    system_msg = st.session_state.messages[0]
+
+    conversation = st.session_state.messages[1:]
+
+    conversation = conversation[-MAX_INTERACTIONS*2:]
+
+    st.session_state.messages = [system_msg] + conversation
