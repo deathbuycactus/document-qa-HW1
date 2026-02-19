@@ -30,7 +30,12 @@ collection = chroma_client.get_or_create_collection('Lab4Collection')
 # HTML Embedding Functions
 # ==============================
 def relative_club_info():
+
+
+
+
     
+    return
 def add_to_collection(collection, text, file_name):
     """Embed a html document and store in ChromaDB."""
     client = st.session_state.openai_client
